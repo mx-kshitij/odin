@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "type": "module",
   "description": "Extension for Mendix Studio Pro",
+  "license": "MIT",
   "scripts": {
     "build": "tsc --noEmit && vite build --config vite.config.ts"
   },
