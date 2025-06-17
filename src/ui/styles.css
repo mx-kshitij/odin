@@ -1,0 +1,10 @@
+.chat-container {
+  display: flex;
+  height: 100%;
+  width: 100%;
+}
+
+.chat-header {
+  padding: 1rem;
+  background: #f5f5f5;
+}

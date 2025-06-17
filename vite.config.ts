@@ -6,12 +6,12 @@ export default defineConfig({
             formats: ["es"],
             entry: {
                 main: "src/main/index.ts",
-                ui: "src/ui/index.tsx"
+                dockablepane: "src/ui/odin.tsx"
             }
         },
         rollupOptions: {
             external: ["@mendix/component-framework", "@mendix/model-access-sdk"]
         },
-        outDir: "./dist/myextension"
+        outDir: "./dist/odin"
     }
 } satisfies UserConfig);

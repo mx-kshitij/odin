@@ -4,27 +4,29 @@ class Main implements IComponent {
     async loaded() {
         // Add a menu item to the Extensions menu
         await studioPro.ui.extensionsMenu.add({
-            menuId: "myextension.MainMenu",
-            caption: "MyExtension Menu",
+            menuId: "odin.main",
+            caption: "Odin",
             subMenus: [
-                { menuId: "myextension.ShowTabMenuItem", caption: "Show tab" },
+                { menuId: "odin.NewChat", caption: "Chat" },
             ],
         });
+
+        const paneHandle = await studioPro.ui.panes.register(
+            {
+                title: "Odin",
+                initialPosition: "right",
+            },
+            {
+                componentName: "extension/odin",
+                uiEntrypoint: "dockablepane",
+            });
 
         // Open a tab when the menu item is clicked
         studioPro.ui.extensionsMenu.addEventListener(
             "menuItemActivated",
             (args) => {
-                if (args.menuId === "myextension.ShowTabMenuItem") {
-                    studioPro.ui.tabs.open(
-                        {
-                            title: "My Extension Tab",
-                        },
-                        {
-                            componentName: "extension/myextension",
-                            uiEntrypoint: "tab",
-                        }
-                    );
+                if (args.menuId === "odin.NewChat") {
+                    studioPro.ui.panes.open(paneHandle)
                 }
             }
         );
