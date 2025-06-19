@@ -34,13 +34,23 @@ const ConfigDialog: React.FC<ConfigDialogProps> = ({
   onDisconnect,
   connectionConfig,
 }) => {
-  const [config, setConfig] = useState<ConnectionConfig>(connectionConfig);
+  const [config, setConfig] = useState<ConnectionConfig>({
+    ...connectionConfig,
+    // Default to api-key if no auth type is set
+    authType: connectionConfig.authType || 'api-key'
+  });
   const [isConnecting, setIsConnecting] = useState(false);
   const [isDisconnecting, setIsDisconnecting] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
+  // Update config when connectionConfig changes
   useEffect(() => {
-    setConfig(connectionConfig);
+    const updatedConfig = { ...connectionConfig };
+    // Ensure there's always a valid authType
+    if (!updatedConfig.authType || updatedConfig.authType !== 'api-key' && updatedConfig.authType !== 'bearer') {
+      updatedConfig.authType = 'api-key';
+    }
+    setConfig(updatedConfig);
   }, [connectionConfig]);
 
   const validateForm = () => {
@@ -151,12 +161,28 @@ const ConfigDialog: React.FC<ConfigDialogProps> = ({
             <Select
               id="auth-type"
               value={config.authType}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => updateConfig({ authType: e.target.value as any, authValue: '' })}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                const newAuthType = e.target.value as 'api-key' | 'bearer';
+                updateConfig({ 
+                  authType: newAuthType,
+                  apiKey: '',
+                  bearerToken: ''
+                });
+              }}
             >
-              <option value="entra">Entra ID</option>
               <option value="api-key">API Key</option>
               <option value="bearer">Bearer Token</option>
             </Select>
+          </div>
+          <div>
+            <Label htmlFor="api-version">API Version (optional)</Label>
+            <Input
+              id="api-version"
+              type="text"
+              value={config.apiVersion || ''}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateConfig({ apiVersion: e.target.value })}
+              placeholder="e.g. 2024-04-01-preview"
+            />
           </div>
           {config.authType === 'api-key' && (
             <div>
@@ -164,8 +190,10 @@ const ConfigDialog: React.FC<ConfigDialogProps> = ({
               <Input
                 id="api-key"
                 type="password"
-                value={config.authValue || ''}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateConfig({ authValue: e.target.value })}
+                value={config.apiKey || ''}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
+                  updateConfig({ apiKey: e.target.value })
+                }
                 placeholder="Enter API key"
               />
             </div>
@@ -176,9 +204,12 @@ const ConfigDialog: React.FC<ConfigDialogProps> = ({
               <Input
                 id="bearer-token"
                 type="password"
-                value={config.authValue || ''}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateConfig({ authValue: e.target.value })}
-                placeholder="Enter bearer token"
+                value={config.bearerToken || ''}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
+                  updateConfig({ bearerToken: e.target.value })
+                }
+                placeholder="Enter Bearer token"
+                onPaste={e => { console.log('Paste event on Bearer Token input', e); }}
               />
             </div>
           )}

@@ -11,8 +11,10 @@ export interface ConnectionConfig {
   modelUrl: string;
   modelName: string;
   systemPrompt: string;
-  authType: 'entra' | 'api-key' | 'bearer';
-  authValue?: string;
+  authType: 'api-key' | 'bearer';
+  apiKey?: string;
+  apiVersion?: string;
+  bearerToken?: string;
 }
 
 export interface ImageAttachment {

@@ -19,8 +19,7 @@ const ChatPage: React.FC = () => {
     modelUrl: "",
     modelName: "",
     systemPrompt: "",
-    authType: "api-key",
-    authValue: ""
+    authType: "api-key"
   });
   useTheme();
 

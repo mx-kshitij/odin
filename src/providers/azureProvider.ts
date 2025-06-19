@@ -1,6 +1,5 @@
 import { ChatProvider, ProviderResult } from '../types/Provider.js';
 import { AzureOpenAI } from 'openai';
-import { DefaultAzureCredential, getBearerTokenProvider } from '@azure/identity';
 import { defaultSystemPrompt } from '../lib/defaults.js';
 import { ConnectionConfig, Message } from '../types/chat.js';
 import {
@@ -12,14 +11,16 @@ import { toolRegistry } from '../tools/toolRegistry.js';
 
 export const azureProvider: ChatProvider<AzureOpenAI> = {
   async connect(config) {
-    const credential = new DefaultAzureCredential();
-    const scope = 'https://cognitiveservices.azure.com/.default';
-    const azureADTokenProvider = getBearerTokenProvider(credential, scope);
-    return new AzureOpenAI({
-      endpoint: config.modelUrl,
-      azureADTokenProvider,
-      deployment: config.modelName,
-    });
+    const { modelUrl: endpoint, modelName: deployment, apiKey, apiVersion, bearerToken } = config;
+    let options: any = { endpoint, deployment, apiVersion };
+    if (bearerToken) {
+      options.defaultHeaders = {
+        Authorization: `Bearer ${bearerToken}`
+      };
+    } else if (apiKey) {
+      options.apiKey = apiKey;
+    }
+    return new AzureOpenAI(options);
   },
   async sendMessage(client, messages: Message[], config: ConnectionConfig, mappedMessagesOverride?: ChatCompletionMessageParam[]): Promise<ProviderResult> {
     const mappedMessages: ChatCompletionMessageParam[] = mappedMessagesOverride ?? [
