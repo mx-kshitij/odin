@@ -1,0 +1,20 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch StudioPro with debugger attached",
+            "type": "msedge",
+            "useWebView": true,
+            "runtimeExecutable": "C:\\Program Files\\Mendix\\10.23.0.70273\\modeler\\studiopro.exe",
+            "runtimeArgs": [
+                "--enable-extension-development",
+                "--enable-web-extensions",
+                "--webview-remote-debugging",
+                "--enable-dev-mode",
+                "--force-open-most-recent"
+            ],
+            "request": "launch",
+            "webRoot": "C:\\Mac\\Home\\Documents\\Extensions\\Odin\\dist\\odin"
+        }
+    ]
+} 

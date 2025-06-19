@@ -4,7 +4,8 @@
     "target": "es2023",
     "module": "es2022",
     "moduleResolution": "bundler",
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "sourceMap": true
   },
   "include": ["src"]
 }

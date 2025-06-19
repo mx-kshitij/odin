@@ -12,6 +12,7 @@ export default defineConfig({
         rollupOptions: {
             external: ["@mendix/component-framework", "@mendix/model-access-sdk"]
         },
-        outDir: "./dist/odin"
+        outDir: "./dist/odin",
+        sourcemap: true 
     }
 } satisfies UserConfig);
