@@ -185,32 +185,58 @@ const ConfigDialog: React.FC<ConfigDialogProps> = ({
             />
           </div>
           {config.authType === 'api-key' && (
-            <div>
-              <Label htmlFor="api-key">API Key</Label>
-              <Input
-                id="api-key"
-                type="password"
-                value={config.apiKey || ''}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
-                  updateConfig({ apiKey: e.target.value })
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <div style={{ flex: 1 }}>
+                <Label htmlFor="api-key">API Key</Label>
+                <Input
+                  id="api-key"
+                  value={config.apiKey || ''}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
+                    updateConfig({ apiKey: e.target.value })
+                  }
+                  placeholder="Enter API key"
+                />
+              </div>
+              <Button type="button" style={{ height: '2.5rem', width: "70px" }} onClick={async () => {
+                if (navigator.clipboard) {
+                  try {
+                    const text = await navigator.clipboard.readText();
+                    updateConfig({ apiKey: text });
+                  } catch (err) {
+                    alert('Failed to read clipboard');
+                  }
+                } else {
+                  alert('Clipboard API not supported');
                 }
-                placeholder="Enter API key"
-              />
+              }}>Paste</Button>
             </div>
           )}
           {config.authType === 'bearer' && (
-            <div>
-              <Label htmlFor="bearer-token">Bearer Token</Label>
-              <Input
-                id="bearer-token"
-                type="password"
-                value={config.bearerToken || ''}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
-                  updateConfig({ bearerToken: e.target.value })
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <div style={{ flex: 1 }}>
+                <Label htmlFor="bearer-token">Bearer Token</Label>
+                <Input
+                  id="bearer-token"
+                  value={config.bearerToken || ''}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
+                    updateConfig({ bearerToken: e.target.value })
+                  }
+                  placeholder="Enter Bearer token"
+                  onPaste={e => { console.log('Paste event on Bearer Token input', e); }}
+                />
+              </div>
+              <Button type="button" style={{ height: '2.5rem', width: "70px" }} onClick={async () => {
+                if (navigator.clipboard) {
+                  try {
+                    const text = await navigator.clipboard.readText();
+                    updateConfig({ bearerToken: text });
+                  } catch (err) {
+                    alert('Failed to read clipboard');
+                  }
+                } else {
+                  alert('Clipboard API not supported');
                 }
-                placeholder="Enter Bearer token"
-                onPaste={e => { console.log('Paste event on Bearer Token input', e); }}
-              />
+              }}>Paste</Button>
             </div>
           )}
           {!isConnected ? (
