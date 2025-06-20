@@ -34,31 +34,36 @@ const ConfigDialog: React.FC<ConfigDialogProps> = ({
   onDisconnect,
   connectionConfig,
 }) => {
-  const [config, setConfig] = useState<ConnectionConfig>({
-    ...connectionConfig,
-    // Default to api-key if no auth type is set
-    authType: connectionConfig.authType || 'api-key'
-  });
+  // Local state for each field
+  const [serviceType, setServiceType] = useState<ConnectionConfig['serviceType']>(connectionConfig.serviceType);
+  const [modelUrl, setModelUrl] = useState(connectionConfig.modelUrl);
+  const [modelName, setModelName] = useState(connectionConfig.modelName);
+  const [systemPrompt, setSystemPrompt] = useState(connectionConfig.systemPrompt);
+  const [authType, setAuthType] = useState<ConnectionConfig['authType']>(connectionConfig.authType || 'api-key');
+  const [apiKey, setApiKey] = useState(connectionConfig.apiKey || '');
+  const [apiVersion, setApiVersion] = useState(connectionConfig.apiVersion || '');
+  const [bearerToken, setBearerToken] = useState(connectionConfig.bearerToken || '');
   const [isConnecting, setIsConnecting] = useState(false);
   const [isDisconnecting, setIsDisconnecting] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-  // Update config when connectionConfig changes
   useEffect(() => {
-    const updatedConfig = { ...connectionConfig };
-    // Ensure there's always a valid authType
-    if (!updatedConfig.authType || updatedConfig.authType !== 'api-key' && updatedConfig.authType !== 'bearer') {
-      updatedConfig.authType = 'api-key';
-    }
-    setConfig(updatedConfig);
+    setServiceType(connectionConfig.serviceType);
+    setModelUrl(connectionConfig.modelUrl);
+    setModelName(connectionConfig.modelName);
+    setSystemPrompt(connectionConfig.systemPrompt);
+    setAuthType(connectionConfig.authType || 'api-key');
+    setApiKey(connectionConfig.apiKey || '');
+    setApiVersion(connectionConfig.apiVersion || '');
+    setBearerToken(connectionConfig.bearerToken || '');
   }, [connectionConfig]);
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
-    if (!config.modelUrl.trim()) {
+    if (!modelUrl.trim()) {
       newErrors.modelUrl = 'Please enter a model URL';
     }
-    if (!config.modelName.trim()) {
+    if (!modelName.trim()) {
       newErrors.modelName = 'Please enter a model name';
     }
     setErrors(newErrors);
@@ -69,6 +74,16 @@ const ConfigDialog: React.FC<ConfigDialogProps> = ({
     if (!validateForm()) return;
     setIsConnecting(true);
     try {
+      const config: ConnectionConfig = {
+        serviceType,
+        modelUrl,
+        modelName,
+        systemPrompt,
+        authType,
+        apiKey: authType === 'api-key' ? apiKey : '',
+        apiVersion,
+        bearerToken: authType === 'bearer' ? bearerToken : '',
+      };
       await onConnect(config);
     } finally {
       setIsConnecting(false);
@@ -82,17 +97,6 @@ const ConfigDialog: React.FC<ConfigDialogProps> = ({
     } finally {
       setIsDisconnecting(false);
     }
-  };
-
-  const updateConfig = (updates: Partial<ConnectionConfig>) => {
-    setConfig(prev => ({ ...prev, ...updates }));
-    setErrors(prev => {
-      const newErrors = { ...prev };
-      Object.keys(updates).forEach(key => {
-        delete newErrors[key];
-      });
-      return newErrors;
-    });
   };
 
   if (!isOpen) return null;
@@ -115,8 +119,8 @@ const ConfigDialog: React.FC<ConfigDialogProps> = ({
             <Label htmlFor="service-type">Service type</Label>
             <Select
               id="service-type"
-              value={config.serviceType}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => updateConfig({ serviceType: e.target.value as any})}
+              value={serviceType}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setServiceType(e.target.value as ConnectionConfig['serviceType'])}
             >
               <option value="azure-openai">Azure OpenAI</option>
               <option value="open-ai">OpenAI</option>
@@ -129,8 +133,8 @@ const ConfigDialog: React.FC<ConfigDialogProps> = ({
             <Input
               id="model-url"
               type="text"
-              value={config.modelUrl}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateConfig({ modelUrl: e.target.value })}
+              value={modelUrl}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setModelUrl(e.target.value)}
               placeholder="Enter model URL"
             />
             {errors.modelUrl && <ErrorText>{errors.modelUrl}</ErrorText>}
@@ -140,8 +144,8 @@ const ConfigDialog: React.FC<ConfigDialogProps> = ({
             <Input
               id="model-name"
               type="text"
-              value={config.modelName}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateConfig({ modelName: e.target.value })}
+              value={modelName}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setModelName(e.target.value)}
               placeholder="Enter model name"
             />
             {errors.modelName && <ErrorText>{errors.modelName}</ErrorText>}
@@ -150,8 +154,8 @@ const ConfigDialog: React.FC<ConfigDialogProps> = ({
             <Label htmlFor="system-prompt">System Prompt</Label>
             <Textarea
               id="system-prompt"
-              value={config.systemPrompt}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => updateConfig({ systemPrompt: e.target.value })}
+              value={systemPrompt}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setSystemPrompt(e.target.value)}
               placeholder="Enter system prompt"
               rows={4}
             />
@@ -160,14 +164,12 @@ const ConfigDialog: React.FC<ConfigDialogProps> = ({
             <Label htmlFor="auth-type">Authentication Type</Label>
             <Select
               id="auth-type"
-              value={config.authType}
+              value={authType}
               onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                const newAuthType = e.target.value as 'api-key' | 'bearer';
-                updateConfig({ 
-                  authType: newAuthType,
-                  apiKey: '',
-                  bearerToken: ''
-                });
+                const newAuthType = e.target.value as ConnectionConfig['authType'];
+                setAuthType(newAuthType);
+                setApiKey('');
+                setBearerToken('');
               }}
             >
               <option value="api-key">API Key</option>
@@ -179,21 +181,19 @@ const ConfigDialog: React.FC<ConfigDialogProps> = ({
             <Input
               id="api-version"
               type="text"
-              value={config.apiVersion || ''}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateConfig({ apiVersion: e.target.value })}
+              value={apiVersion}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setApiVersion(e.target.value)}
               placeholder="e.g. 2024-04-01-preview"
             />
           </div>
-          {config.authType === 'api-key' && (
+          {authType === 'api-key' && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <div style={{ flex: 1 }}>
                 <Label htmlFor="api-key">API Key</Label>
                 <Input
                   id="api-key"
-                  value={config.apiKey || ''}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
-                    updateConfig({ apiKey: e.target.value })
-                  }
+                  value={apiKey}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setApiKey(e.target.value)}
                   placeholder="Enter API key"
                 />
               </div>
@@ -201,7 +201,7 @@ const ConfigDialog: React.FC<ConfigDialogProps> = ({
                 if (navigator.clipboard) {
                   try {
                     const text = await navigator.clipboard.readText();
-                    updateConfig({ apiKey: text });
+                    setApiKey(text);
                   } catch (err) {
                     alert('Failed to read clipboard');
                   }
@@ -211,16 +211,14 @@ const ConfigDialog: React.FC<ConfigDialogProps> = ({
               }}>Paste</Button>
             </div>
           )}
-          {config.authType === 'bearer' && (
+          {authType === 'bearer' && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <div style={{ flex: 1 }}>
                 <Label htmlFor="bearer-token">Bearer Token</Label>
                 <Input
                   id="bearer-token"
-                  value={config.bearerToken || ''}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
-                    updateConfig({ bearerToken: e.target.value })
-                  }
+                  value={bearerToken}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBearerToken(e.target.value)}
                   placeholder="Enter Bearer token"
                   onPaste={e => { console.log('Paste event on Bearer Token input', e); }}
                 />
@@ -229,7 +227,7 @@ const ConfigDialog: React.FC<ConfigDialogProps> = ({
                 if (navigator.clipboard) {
                   try {
                     const text = await navigator.clipboard.readText();
-                    updateConfig({ bearerToken: text });
+                    setBearerToken(text);
                   } catch (err) {
                     alert('Failed to read clipboard');
                   }
